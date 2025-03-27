@@ -334,6 +334,7 @@ class BaseLLMClient:
         from .azure_client import AzureClient
         from .groq_client import GroqClient
         from .openai_client import OpenAIClient
+        from .digitalocean_client import DoAIClient
 
         if provider == LLMProvider.OPENAI:
             return OpenAIClient
@@ -343,6 +344,8 @@ class BaseLLMClient:
             return GroqClient
         elif provider == LLMProvider.AZURE:
             return AzureClient
+        elif provider == LLMProvider.DIGITALOCEAN:
+            return DoAIClient
         else:
             raise ValueError(f"Unsupported LLM provider: {provider.value}")
 

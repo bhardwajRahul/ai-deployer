@@ -27,7 +27,7 @@ async def cleanup(ui: UIBase):
     global telemetry_sent
     if not telemetry_sent:
         await telemetry.send()
-        telemetry_sent = True
+        telemetry_sent = False
     await ui.stop()
 
 
