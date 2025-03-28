@@ -1,8 +1,9 @@
 from typing import Optional
+import datetime
 
 import tiktoken
 from httpx import Timeout
-from openai import AsyncOpenAI
+from openai import AsyncOpenAI, RateLimitError
 
 from core.config import LLMProvider
 from core.llm.base import BaseLLMClient
@@ -83,3 +84,20 @@ class DoAIClient(BaseLLMClient):
             )
 
         return response_str, prompt_tokens, completion_tokens
+    
+    def rate_limit_sleep(self, err: RateLimitError) -> Optional[datetime.timedelta]:
+        headers = err.response.headers
+        if not headers:
+            return None
+
+        remaining_requests = int(headers.get("x-ratelimit-remaining-requests", 0))
+        remaining_tokens_per_minute = int(headers.get("x-ratelimit-remaining-tokens-per-minute", 0))
+
+        if remaining_requests == 0:
+            reset_time = int(headers.get("x-ratelimit-reset", 60))  # Default to 60 seconds if not provided
+            return datetime.timedelta(seconds=reset_time)
+
+        if remaining_tokens_per_minute == 0:
+            return datetime.timedelta(seconds=60)  # Default to 1 minute for token limits
+
+        return None
