@@ -285,7 +285,7 @@ class TechLead(RelevantFilesMixin, BaseAgent):
 
     def update_epics_and_tasks(self, edited_plan_string):
         if not edited_plan_string:
-            log.error("Edited plan string is None or empty.")
+            log.info("Edited plan string is None or empty.")
             return
         edited_plan = json.loads(edited_plan_string)
         
