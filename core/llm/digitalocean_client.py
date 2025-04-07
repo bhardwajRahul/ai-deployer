@@ -99,8 +99,10 @@ def rate_limit_sleep(self, err: RateLimitError) -> Optional[datetime.timedelta]:
     # Extract rate-limiting headers
     remaining_requests = int(headers.get("x-ratelimit-remaining-requests", 0))
     remaining_tokens_per_minute = int(headers.get("x-ratelimit-remaining-tokens-per-minute", 0))
+    remaining_tokens_per_day = int(headers.get("x-ratelimit-remaining-tokens-per-day", 0))
     reset_requests = int(headers.get("x-ratelimit-reset-requests", 0))
     reset_tokens_per_minute = int(headers.get("x-ratelimit-reset-tokens-per-minute", 0))
+    reset_token_per_day = int(headers.get("x-ratelimit-reset-tokens-per-day", 0))
 
     # Determine wait time based on reset values
     if remaining_requests == 0 and reset_requests > 0:
@@ -112,6 +114,11 @@ def rate_limit_sleep(self, err: RateLimitError) -> Optional[datetime.timedelta]:
         wait_time = reset_tokens_per_minute - int(datetime.datetime.now().timestamp())
         log.warning(f"Rate limit hit for tokens per minute. Waiting for {wait_time} seconds.")
         return datetime.timedelta(seconds=max(wait_time, 1))  # Ensure at least 1 second wait
+    
+    if remaining_tokens_per_day == 0 and reset_token_per_day > 0:
+        wait_time = reset_token_per_day - int(datetime.datetime.now().timestamp())
+        log.warning(f"Rate limti hit for tokens per day. Waiting for {wait_time} seconds.")
+        return datetime.timedelta(seconds=max(wait_time, 1))
 
     # If no reset time is provided but limits are exceeded, use a default wait time
     if remaining_requests == 0 or remaining_tokens_per_minute == 0:
